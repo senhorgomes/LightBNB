@@ -121,11 +121,35 @@ exports.getAllReservations = getAllReservations;
  * @return {Promise<[{}]>}  A promise to the properties.
  */
 const getAllProperties = function(options, limit = 10) {
-  const queryString = `
-  SELECT * FROM properties
-  LIMIT $1
+  // Setup an array to hold any parameters that may be available for the query.
+  const queryParams = [];
+  // Start the query with all information that comes before the WHERE clause.
+  let queryString = `
+    SELECT properties.*, avg(property_reviews.rating) as average_rating
+    FROM properties
+    JOIN property_reviews ON properties.id = property_id
   `;
-  return pool.query(queryString, [limit]).then(res => res.rows);
+
+  // Check if a city has been passed in as an option.
+  if (options.city) {
+    queryParams.push(`%${options.city}%`);
+    queryString += `WHERE city LIKE $${queryParams.length} `;
+  }
+
+  // Add any query that comes after the WHERE clause.
+  queryParams.push(limit);
+  queryString += `
+  GROUP BY properties.id
+  ORDER BY cost_per_night
+  LIMIT $${queryParams.length};
+  `;
+
+  // Console log everything just to make sure we've done it right.
+  console.log(queryString, queryParams);
+
+  // Run the query.
+  return pool.query(queryString, queryParams)
+  .then(res => res.rows);
 }
 // const getAllProperties = function(options, limit = 10) {
 //   const limitedProperties = {};
