@@ -29,7 +29,7 @@ const pool = new Pool({
 const getUserWithEmail = function(email) {
   const queryString = `
       SELECT * FROM users
-      WHERE users.email = $1
+      WHERE users.email = $1;
     `;
   return db.query(queryString, [email])
     .then(res => {if(res.rows) {
@@ -38,7 +38,7 @@ const getUserWithEmail = function(email) {
       return null;
     }
   })
-    .catch(err => { console.log('query error:', err)
+    .catch(err => { console.log('Uh oh, query error:', err)
   });
 };
 exports.getUserWithEmail = getUserWithEmail;
@@ -51,7 +51,7 @@ exports.getUserWithEmail = getUserWithEmail;
 const getUserWithId = function(id) {
   const queryString = `
     SELECT * FROM users
-    WHERE users.id = $1
+    WHERE users.id = $1;
   `;
   return db.query(queryString, [id])
     .then(res => {if(res.rows) {
@@ -60,7 +60,7 @@ const getUserWithId = function(id) {
       return null;
     }
   })
-    .catch(err => { console.log('query error:', err)
+    .catch(err => { console.log('Uh oh, query error:', err)
   });
 }
 exports.getUserWithId = getUserWithId;
@@ -72,10 +72,19 @@ exports.getUserWithId = getUserWithId;
  * @return {Promise<{}>} A promise to the user.
  */
 const addUser =  function(user) {
-  const userId = Object.keys(users).length + 1;
-  user.id = userId;
-  users[userId] = user;
-  return Promise.resolve(user);
+  const queryString= `
+    INSERT INTO users (name, password, email)
+    VALUES ($1, $2, $3)
+    RETURNING *;
+  `;
+  const values = [user.name, user.email, user.password];
+  return db.query(queryString, values)
+    .then(res => {
+      return res.rows[0];
+    })
+    .catch(err => {
+      return console.log('Uh oh, query error:', err);
+    })
 }
 exports.addUser = addUser;
 
