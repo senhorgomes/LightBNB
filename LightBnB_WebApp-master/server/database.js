@@ -31,7 +31,7 @@ const getUserWithEmail = function(email) {
       SELECT * FROM users
       WHERE users.email = $1;
     `;
-  return db.query(queryString, [email])
+  return pool.query(queryString, [`${email}`])
     .then(res => {if(res.rows) {
       return res.rows[0];
     }else {
@@ -53,7 +53,7 @@ const getUserWithId = function(id) {
     SELECT * FROM users
     WHERE users.id = $1;
   `;
-  return db.query(queryString, [id])
+  return pool.query(queryString, [`${id}`])
     .then(res => {if(res.rows) {
       return res.rows[0];
     }else {
@@ -77,8 +77,8 @@ const addUser =  function(user) {
     VALUES ($1, $2, $3)
     RETURNING *;
   `;
-  const values = [user.name, user.email, user.password];
-  return db.query(queryString, values)
+  const values = [`${user.name}`, `${user.password}`, `${user.email}`];
+  return pool.query(queryString, values)
     .then(res => {
       return res.rows[0];
     })
