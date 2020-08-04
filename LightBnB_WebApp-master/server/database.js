@@ -5,7 +5,7 @@ const pool = new Pool({
   user: 'vagrant',
   password: '123',
   host: 'localhost',
-  database: 'bootcampx'
+  database: 'lightbnb'
 });
 /// Users
 
@@ -14,18 +14,33 @@ const pool = new Pool({
  * @param {String} email The email of the user.
  * @return {Promise<{}>} A promise to the user.
  */
+// const getUserWithEmail = function(email) {
+//   let user;
+//   for (const userId in users) {
+//     user = users[userId];
+//     if (user.email.toLowerCase() === email.toLowerCase()) {
+//       break;
+//     } else {
+//       user = null;
+//     }
+//   }
+//   return Promise.resolve(user);
+// }
 const getUserWithEmail = function(email) {
-  let user;
-  for (const userId in users) {
-    user = users[userId];
-    if (user.email.toLowerCase() === email.toLowerCase()) {
-      break;
-    } else {
-      user = null;
+  const queryString = `
+      SELECT * FROM users
+      WHERE users.email = $1
+    `;
+  return db.query(queryString, [email])
+    .then(res => {if(res.rows) {
+      return res.rows[0];
+    }else {
+      return null;
     }
-  }
-  return Promise.resolve(user);
-}
+  })
+    .catch(err => { console.log('query error:', err)
+  });
+};
 exports.getUserWithEmail = getUserWithEmail;
 
 /**
@@ -34,7 +49,19 @@ exports.getUserWithEmail = getUserWithEmail;
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithId = function(id) {
-  return Promise.resolve(users[id]);
+  const queryString = `
+    SELECT * FROM users
+    WHERE users.id = $1
+  `;
+  return db.query(queryString, [id])
+    .then(res => {if(res.rows) {
+      return res.rows[0];
+    }else {
+      return null;
+    }
+  })
+    .catch(err => { console.log('query error:', err)
+  });
 }
 exports.getUserWithId = getUserWithId;
 
@@ -73,11 +100,11 @@ exports.getAllReservations = getAllReservations;
  * @return {Promise<[{}]>}  A promise to the properties.
  */
 const getAllProperties = function(options, limit = 10) {
-  pool.query(`
+  const queryString = `
   SELECT * FROM properties
   LIMIT $1
-  `, [limit])
-  .then(res => res.rows);
+  `;
+  return pool.query(queryString, [limit]).then(res => res.rows);
 }
 // const getAllProperties = function(options, limit = 10) {
 //   const limitedProperties = {};
