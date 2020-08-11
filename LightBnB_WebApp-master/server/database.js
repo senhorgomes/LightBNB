@@ -133,17 +133,41 @@ const getAllProperties = function(options, limit = 10) {
   // Check if a city has been passed in as an option.
   if (options.city) {
     queryParams.push(`%${options.city}%`);
-    queryString += `WHERE city LIKE $${queryParams.length} `;
+    (queryParams.length - 1 !== 0) ? 
+    (queryString += `AND city LIKE ${queryParams.length} `) : 
+    (queryString += `WHERE city LIKE ${queryParams.length} `);
+  }
+  // if an owner_id is passed in, only return properties belonging to that owner.
+  if (options.owner_id) {
+    queryParams.push(`%${options.owner_id}%`) ;
+    (queryParams.length - 1 !== 0) ?
+    (queryString += `AND owner_id LIKE ${queryParams.length} `) : 
+    (queryString += `WHERE owner_id LIKE ${queryParams.length} `);
+
   }
 
+  // minimum and maximum price
+  if (options.minimum_price_per_night && options.maximum_prie_per_night) {
+    queryParams.push(options.minimum_price_per_night * 100, options.maximum_price_per_night * 100);
+    (queryParams.length === 2) ?
+    (queryString += `WHERE cost_per_night >= ${queryParams.length - 1} AND cost_per_night <= ${queryParams.length}`) :
+    (queryString += `AND cost_per_night >= ${queryParams.length - 1} AND cost_per_night <= ${queryParams.length}`)
+  }
   // Add any query that comes after the WHERE clause.
   queryParams.push(limit);
   queryString += `
   GROUP BY properties.id
-  ORDER BY cost_per_night
-  LIMIT $${queryParams.length};
   `;
+  if (options.minimum_rating) {
+    queryParams.push(options.minimum_rating);
+    queryString += `HAVING avg(property_reviews.rating) >= ${queryParams.length} `;
+  }
 
+  queryParams.push(limit);
+  queryString += `
+  ORDER BY cost_per_night
+  LIMIT ${queryParams.length};
+  `;
   // Console log everything just to make sure we've done it right.
   console.log(queryString, queryParams);
 
