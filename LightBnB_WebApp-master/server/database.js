@@ -1,14 +1,5 @@
-const properties = require('./json/properties.json');
-const users = require('./json/users.json');
-const { Pool } = require('pg');
-const pool = new Pool({
-  user: 'vagrant',
-  password: '123',
-  host: 'localhost',
-  database: 'lightbnb'
-});
 /// Users
-
+const db = require('../db')
 /**
  * Get a single user from the database given their email.
  * @param {String} email The email of the user.
@@ -31,7 +22,7 @@ const getUserWithEmail = function(email) {
       SELECT * FROM users
       WHERE users.email = $1;
     `;
-  return pool.query(queryString, [`${email}`])
+  return db.query(queryString, [`${email}`])
     .then(res => {if(res.rows) {
       return res.rows[0];
     }else {
@@ -53,7 +44,7 @@ const getUserWithId = function(id) {
     SELECT * FROM users
     WHERE users.id = $1;
   `;
-  return pool.query(queryString, [`${id}`])
+  return db.query(queryString, [`${id}`])
     .then(res => {if(res.rows) {
       return res.rows[0];
     }else {
@@ -78,7 +69,7 @@ const addUser =  function(user) {
     RETURNING *;
   `;
   const values = [`${user.name}`, `${user.password}`, `${user.email}`];
-  return pool.query(queryString, values)
+  return db.query(queryString, values)
     .then(res => {
       return res.rows[0];
     })
@@ -100,7 +91,7 @@ const getAllReservations = function(guest_id, limit = 10) {
       SELECT * FROM reservations
       WHERE guest_id = $1
     `;
-  return pool.query(queryString, [`${guest_id}`, limit])
+  return db.query(queryString, [`${guest_id}`, limit])
     .then(res => {if(res.rows) {
       return res.rows[0];
     }else {
@@ -172,7 +163,7 @@ const getAllProperties = function(options, limit = 10) {
   console.log(queryString, queryParams);
 
   // Run the query.
-  return pool.query(queryString, queryParams)
+  return db.query(queryString, queryParams)
   .then(res => res.rows);
 }
 // const getAllProperties = function(options, limit = 10) {
@@ -227,7 +218,7 @@ const addProperty = function(property) {
       property.province,
       property.post_code
     ];
-  return pool.query(queryString, values)
+  return db.query(queryString, values)
   .then(res => {
     return res.rows[0];
   })
