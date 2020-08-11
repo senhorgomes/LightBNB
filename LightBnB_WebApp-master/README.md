@@ -44,4 +44,4 @@
   * `json` is a directory that contains a bunch of dummy data in `.json` files.
   * `database.js` is responsible for all queries to the database. Connects to database.
   * `db`
-    * `index.js` data access code
+    * `index.js` data access code to allow quicker access to every query, if needed
